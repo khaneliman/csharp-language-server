@@ -449,14 +449,14 @@ let findAndLoadSolutionOnDir
         (logger: ILog)
         dir =
     async {
-        let fileNotOnNodeModules (filename: string) =
+        let fileNotOnNodeModulesOrDirenv (filename: string) =
             filename.Split(Path.DirectorySeparatorChar)
-            |> Seq.contains "node_modules"
+            |> Seq.exists (fun segment -> segment = "node_modules" || segment = ".direnv")
             |> not
 
         let solutionFiles =
             Directory.GetFiles(dir, "*.sln", SearchOption.AllDirectories)
-            |> Seq.filter fileNotOnNodeModules
+            |> Seq.filter fileNotOnNodeModulesOrDirenv
             |> Seq.toList
 
         let showMessage m =
@@ -482,7 +482,7 @@ let findAndLoadSolutionOnDir
                 let fsprojFiles = Directory.GetFiles(dir, "*.fsproj", SearchOption.AllDirectories)
 
                 [ csprojFiles; fsprojFiles ] |> Seq.concat
-                                                |> Seq.filter fileNotOnNodeModules
+                                                |> Seq.filter fileNotOnNodeModulesOrDirenv
                                                 |> Seq.toList
 
             if projFiles.Length = 0 then
